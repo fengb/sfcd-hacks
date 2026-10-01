@@ -1,0 +1,64 @@
+name: bank-editor
+
+on:
+  push:
+    paths:
+      - 'bank-editor/**'
+      - '.github/workflows/bank-editor.yml'
+  pull_request:
+    paths:
+      - 'bank-editor/**'
+      - '.github/workflows/bank-editor.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bank-editor
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: bank-editor/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run check
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bank-editor
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: bank-editor/package-lock.json
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          # Matches where the artifact is served from on the Pages site.
+          BASE_PATH: /bank-editor/
+          NODE_ENV: production
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bank-editor-dist
+          path: bank-editor/dist
+          if-no-files-found: error
